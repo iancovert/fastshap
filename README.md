@@ -43,7 +43,7 @@ For usage examples, see the following notebooks:
 
 # References
 
-[1] Neil Jethani\*, Mukund Sundarshan\*, Ian Covert\*, Su-In Lee, Rajesh Ranganath. "FastSHAP: Real-Time Shapley Value Estimation."
+[1] Neil Jethani\*, Mukund Sudarshan\*, Ian Covert\*, Su-In Lee, Rajesh Ranganath. "FastSHAP: Real-Time Shapley Value Estimation."
 
 [2] Ian Covert, Scott Lundberg, Su-In Lee. "Explaining by Removing: A Unified Framework For Model Explanation." *arXiv preprint:2011.14878*
 
