@@ -36,7 +36,7 @@ For usage examples, see the following notebooks:
 # Authors
 
 - Neil Jethani (<nj594@nyu.edu>)
-- Mukund Sundarshan (<ms7490@nyu.edu>)
+- Mukund Sudarshan (<ms7490@nyu.edu>)
 - Ian Covert (<icovert@cs.washington.edu>)
 - Su-In Lee
 - Rajesh Ranganath
