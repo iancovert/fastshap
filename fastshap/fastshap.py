@@ -307,7 +307,7 @@ class FastSHAP:
         elif isinstance(val_data, torch.Tensor):
             val_set = TensorDataset(val_data)
         elif isinstance(val_data, Dataset):
-            val_set = train_data
+            val_set = val_data
         else:
             raise ValueError('train_data must be np.ndarray, torch.Tensor or '
                              'Dataset')
