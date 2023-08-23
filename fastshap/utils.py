@@ -190,11 +190,11 @@ class ShapleySampler:
           paired_sampling: whether to use paired sampling.
         '''
         num_included = 1 + self.categorical.sample([batch_size])
-        S = self.tril[num_included - 1]
-        # TODO ideally avoid for loops
-        for i in range(batch_size):
-            if paired_sampling and i % 2 == 1:
-                S[i] = 1 - S[i - 1]
-            else:
-                S[i] = S[i, torch.randperm(self.num_players)]
+        S_ordered = self.tril[num_included - 1]
+        # Generate a random ordering of indices for each row
+        indices = torch.argsort(torch.rand_like(S_ordered), dim=-1)
+        # Execute the permutation
+        S = torch.gather(S_ordered, dim=-1, index=indices)
+        if paired_sampling:
+            S[1::2] = 1 - S[0::2]
         return S
