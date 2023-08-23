@@ -140,6 +140,10 @@ class UniformSampler:
     def __init__(self, num_players):
         self.num_players = num_players
 
+        # Create a (num_players+1) x (num_players) matrix
+        # where each row has 0,1,2,...,num_players ones
+        self.tril = torch.tril(torch.ones(self.num_players+1, self.num_players, dtype=torch.float32),diagonal=-1)
+
     def sample(self, batch_size):
         '''
         Generate sample.
@@ -147,13 +151,10 @@ class UniformSampler:
         Args:
           batch_size:
         '''
-        # Create a (num_players+1) x (num_players) matrix
-        # where each row has 0,1,2,...,num_players ones
-        S_base = torch.tril(torch.ones(self.num_players+1, self.num_players, dtype=torch.float32),diagonal=-1)
         # Decide how many players each instance in the batch should use
         num_included = (torch.rand(batch_size) * (self.num_players + 1)).int()
         # select the row with the appropriate number of 1s for each instance in the batch
-        S_ordered = S_base[num_included]
+        S_ordered = self.tril[num_included]
         # Generate a random ordering of indices for each row
         indices = torch.argsort(torch.rand_like(S_ordered), dim=-1)
         # Execute the permutation
