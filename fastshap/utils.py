@@ -196,5 +196,5 @@ class ShapleySampler:
         # Execute the permutation
         S = torch.gather(S_ordered, dim=-1, index=indices)
         if paired_sampling:
-            S[1::2] = 1 - S[0::2]
+            S[1::2] = 1 - S[0:batch_size-1:2]
         return S
