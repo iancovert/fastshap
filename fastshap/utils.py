@@ -151,14 +151,9 @@ class UniformSampler:
         Args:
           batch_size:
         '''
-        # Decide how many players each instance in the batch should use
-        num_included = (torch.rand(batch_size) * (self.num_players + 1)).int()
-        # select the row with the appropriate number of 1s for each instance in the batch
-        S_ordered = self.tril[num_included]
-        # Generate a random ordering of indices for each row
-        indices = torch.argsort(torch.rand_like(S_ordered), dim=-1)
-        # Execute the permutation
-        S = torch.gather(S_ordered, dim=-1, index=indices)
+        test = torch.rand(batch_size,self.num_players)
+        thresh = torch.rand(batch_size,1)
+        S = (thresh > test).float()
 
         return S
 
