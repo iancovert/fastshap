@@ -140,16 +140,12 @@ class UniformSampler:
     def __init__(self, num_players):
         self.num_players = num_players
 
-        # Create a (num_players+1) x (num_players) matrix
-        # where each row has 0,1,2,...,num_players ones
-        self.tril = torch.tril(torch.ones(self.num_players+1, self.num_players, dtype=torch.float32),diagonal=-1)
-
     def sample(self, batch_size):
         '''
         Generate sample.
 
         Args:
-          batch_size:
+          batch_size: number of samples
         '''
         test = torch.rand(batch_size,self.num_players)
         thresh = torch.rand(batch_size,1)
@@ -159,12 +155,12 @@ class UniformSampler:
 
 
 class ShapleySampler:
-    '''
+    """
     For sampling player subsets from the Shapley distribution.
 
     Args:
       num_players: number of players.
-    '''
+    """
 
     def __init__(self, num_players):
         arange = torch.arange(1, num_players)
@@ -172,24 +168,24 @@ class ShapleySampler:
         w = w / torch.sum(w)
         self.categorical = Categorical(probs=w)
         self.num_players = num_players
-        self.tril = torch.tril(
-            torch.ones(num_players - 1, num_players, dtype=torch.float32),
-            diagonal=0)
+        self.tril = np.tril(
+            np.ones((num_players - 1, num_players), dtype=np.float32), k=0
+        )
+        self.rng = np.random.default_rng()
 
     def sample(self, batch_size, paired_sampling):
-        '''
+        """
         Generate sample.
 
         Args:
           batch_size: number of samples.
           paired_sampling: whether to use paired sampling.
-        '''
+        """
         num_included = 1 + self.categorical.sample([batch_size])
-        S_ordered = self.tril[num_included - 1]
+        S = self.tril[num_included - 1]
         # Generate a random ordering of indices for each row
-        indices = torch.argsort(torch.rand_like(S_ordered), dim=-1)
-        # Execute the permutation
-        S = torch.gather(S_ordered, dim=-1, index=indices)
+        S = self.rng.permuted(S,axis=-1)
+        S = torch.from_numpy(S)
         if paired_sampling:
-            S[1::2] = 1 - S[0:batch_size-1:2]
+            S[1::2] = 1 - S[0 : batch_size - 1 : 2]
         return S
