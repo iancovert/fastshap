@@ -145,26 +145,22 @@ class UniformSampler:
         Generate sample.
 
         Args:
-          batch_size:
+          batch_size: number of samples
         '''
-        S = torch.ones(batch_size, self.num_players, dtype=torch.float32)
-        num_included = (torch.rand(batch_size) * (self.num_players + 1)).int()
-        # TODO ideally avoid for loops
-        # TODO ideally pass buffer to assign samples in place
-        for i in range(batch_size):
-            S[i, num_included[i]:] = 0
-            S[i] = S[i, torch.randperm(self.num_players)]
+        test = torch.rand(batch_size,self.num_players)
+        thresh = torch.rand(batch_size,1)
+        S = (thresh > test).float()
 
         return S
 
 
 class ShapleySampler:
-    '''
+    """
     For sampling player subsets from the Shapley distribution.
 
     Args:
       num_players: number of players.
-    '''
+    """
 
     def __init__(self, num_players):
         arange = torch.arange(1, num_players)
@@ -172,24 +168,24 @@ class ShapleySampler:
         w = w / torch.sum(w)
         self.categorical = Categorical(probs=w)
         self.num_players = num_players
-        self.tril = torch.tril(
-            torch.ones(num_players - 1, num_players, dtype=torch.float32),
-            diagonal=0)
+        self.tril = np.tril(
+            np.ones((num_players - 1, num_players), dtype=np.float32), k=0
+        )
+        self.rng = np.random.default_rng()
 
     def sample(self, batch_size, paired_sampling):
-        '''
+        """
         Generate sample.
 
         Args:
           batch_size: number of samples.
           paired_sampling: whether to use paired sampling.
-        '''
+        """
         num_included = 1 + self.categorical.sample([batch_size])
         S = self.tril[num_included - 1]
-        # TODO ideally avoid for loops
-        for i in range(batch_size):
-            if paired_sampling and i % 2 == 1:
-                S[i] = 1 - S[i - 1]
-            else:
-                S[i] = S[i, torch.randperm(self.num_players)]
+        # Generate a random ordering of indices for each row
+        S = self.rng.permuted(S,axis=-1)
+        S = torch.from_numpy(S)
+        if paired_sampling:
+            S[1::2] = 1 - S[0 : batch_size - 1 : 2]
         return S
