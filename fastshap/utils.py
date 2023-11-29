@@ -94,7 +94,6 @@ class DatasetRepeat(Dataset):
         num_items = np.max(items)
 
         # Ensure all datasets align.
-        # assert np.all([num_items % num == 0 for num in items])
         self.dsets = datasets
         self.num_items = num_items
         self.items = items
@@ -147,20 +146,20 @@ class UniformSampler:
         Args:
           batch_size: number of samples
         '''
-        test = torch.rand(batch_size,self.num_players)
-        thresh = torch.rand(batch_size,1)
-        S = (thresh > test).float()
+        rand = torch.rand(batch_size, self.num_players)
+        thresh = torch.rand(batch_size, 1)
+        S = (thresh > rand).float()
 
         return S
 
 
 class ShapleySampler:
-    """
+    '''
     For sampling player subsets from the Shapley distribution.
 
     Args:
       num_players: number of players.
-    """
+    '''
 
     def __init__(self, num_players):
         arange = torch.arange(1, num_players)
@@ -174,18 +173,16 @@ class ShapleySampler:
         self.rng = np.random.default_rng()
 
     def sample(self, batch_size, paired_sampling):
-        """
+        '''
         Generate sample.
 
         Args:
           batch_size: number of samples.
           paired_sampling: whether to use paired sampling.
-        """
+        '''
         num_included = 1 + self.categorical.sample([batch_size])
         S = self.tril[num_included - 1]
-        # Generate a random ordering of indices for each row
-        S = self.rng.permuted(S,axis=-1)
-        S = torch.from_numpy(S)
+        S = self.rng.permuted(S, axis=1)  # Note: permutes each row.
         if paired_sampling:
-            S[1::2] = 1 - S[0 : batch_size - 1 : 2]
-        return S
+            S[1::2] = 1 - S[0:(batch_size - 1):2]  # Note: allows batch_size % 2 == 1.
+        return torch.from_numpy(S)
